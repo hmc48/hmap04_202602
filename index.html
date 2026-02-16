@@ -1483,6 +1483,24 @@ button.menu-sub-btn { flex: 1; padding: 8px; font-size: 11px; cursor: pointer; }
             if (!g) return;
             if (this.checked) {
                 g.addTo(map);
+                
+                // ★ ズーム変更でズレた座標を、現在の地図に合わせて強制計算し直す
+                setTimeout(() => {
+                    if (g.eachLayer) {
+                        g.eachLayer(layer => {
+                            // マーカー（病院など）の場合：座標を上書きして再描画を促す
+                            if (layer.getLatLng && layer.setLatLng) {
+                                layer.setLatLng(layer.getLatLng());
+                            } 
+                            // 境界線（町丁目など）の場合：スタイルを更新して再描画を促す
+                            else if (layer.setStyle) {
+                                layer.setStyle({});
+                            }
+                        });
+                    }
+                    // キャンバス全体のリフレッシュ
+                    if (myRenderer) myRenderer.redraw();
+                }, 10); 
             } else {
                 map.removeLayer(g);
             }
